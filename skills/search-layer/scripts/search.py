@@ -370,7 +370,7 @@ def search_grok(query: str, api_url: str, api_key: str, model: str = "grok-4.1",
             endpoint,
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             json=payload,
-            timeout=30,
+            timeout=25,
         )
         r.raise_for_status()
 
@@ -619,6 +619,7 @@ def execute_search(query: str, mode: str, keys: dict, num: int,
             all_results = search_searxng(query, num, freshness)
 
     elif mode == "deep":
+        DEEP_TIMEOUT = 60  # seconds: wait for all sources to finish
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
             futures = {}
             # SearXNG (local, always available)
@@ -632,17 +633,24 @@ def execute_search(query: str, mode: str, keys: dict, num: int,
             if has_grok:
                 futures[pool.submit(
                     search_grok, query, grok_url, grok_key, grok_model, num, freshness)] = "grok"
-            for fut in concurrent.futures.as_completed(futures):
-                name = futures[fut]
-                try:
-                    res = fut.result()
-                except Exception as e:
-                    print(f"[{name}] error: {e}", file=sys.stderr)
-                    continue
-                if isinstance(res, dict):
-                    all_results.extend(res.get("results", []))
-                else:
-                    all_results.extend(res)
+            try:
+                for fut in concurrent.futures.as_completed(futures, timeout=DEEP_TIMEOUT):
+                    name = futures[fut]
+                    try:
+                        res = fut.result()
+                    except Exception as e:
+                        print(f"[{name}] error: {e}", file=sys.stderr)
+                        continue
+                    if isinstance(res, dict):
+                        all_results.extend(res.get("results", []))
+                    else:
+                        all_results.extend(res)
+            except concurrent.futures.TimeoutError:
+                # Some sources didn't finish in time — use what we have
+                done = {futures[f] for f in futures if f.done()}
+                missed = {futures[f] for f in futures if not f.done()}
+                if missed:
+                    print(f"[deep] timeout: got {done}, missed {missed}", file=sys.stderr)
 
     elif mode == "answer":
         if "tavily" not in keys:
