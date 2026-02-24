@@ -42,6 +42,17 @@
 - **验证**: valid/429/invalid 三分管理, 每 1h 复验
 - 详情 → `memory/2026-02-22.md`（部署记录）
 
+## Skills 工具箱（自媒体相关）
+| Skill | 用途 | 触发场景 |
+|-------|------|---------|
+| **xiaohongshu-mcp** | 小红书数据拉取+发布 | 查账号数据、发笔记 |
+| **xiaohongshu-title** | 批量生成小红书标题 | 选题/起标题时 |
+| **douyin-hot-trend** | 抖音热搜趋势 | 找选题灵感、蹭热点 |
+| **content-repurposing-engine** | 内容二次创作 | 一篇改多平台版本 |
+| **nano-banana-pro** | AI 图片/封面生成 | 做封面、配图 |
+| **video-frames** | 视频抽帧看内容 | 老板发抖音链接时 |
+| **yt-dlp**（命令行） | 下载抖音/YouTube 视频 | 配合 video-frames |
+
 ## 深度存储索引
 | 文件 | 内容 |
 |------|------|
