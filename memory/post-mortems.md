@@ -6,6 +6,17 @@
 - **根因**: 003636 临时波动，过一阵自恢复
 - **教训**: 先等几分钟再折腾换 key；新 key 不一定有所有模型权限（新 key 没 gpt-5.2 权限）
 
+## 2026-02-25: openai-codex 重复 provider 导致 CLI 报错
+- **现象**: `openclaw agent` CLI 和 models probe 报 `No API key found for provider "openai-codex"`
+- **根因**: models.json 里 `openai-codex` 和 `003636` 是完全重复的 provider（同 URL、同 key、同模型），但 `openai-codex` 不在 openclaw.json 里，auth-profiles.json 也不存在
+- **修复**: 删掉 `openai-codex`，默认模型和 alias 统一指向 `003636/*`
+- **教训**: 加新 provider 时检查是否已有同 URL+key 的 provider；改 provider 名后要同步 openclaw.json 和 alias
+
+## 2026-02-25: Hajimi GitHub key 扫描收益递减
+- **现象**: 19000+ SHA 扫完，272 条 query，DATE_RANGE 扩到 730 天，仍无新 valid key
+- **结论**: GitHub 公开 key 红利期已过，继续投入 ROI 极低
+- **教训**: 自动化扫描有天花板，到头了就认，不要无脑加 query
+
 ## 2026-02-14: Twitter bird 配置记忆丢失
 - **现象**: 之前配好了 bird (Twitter CLI)，但 session reset 后完全忘了
 - **根因**: 配置完成后没有写入记忆文件

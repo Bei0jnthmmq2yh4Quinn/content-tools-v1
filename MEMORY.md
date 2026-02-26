@@ -25,21 +25,25 @@
 - 长期记忆尽量多存有用上下文
 
 ## 环境速查
-- 默认模型：openai-codex/gpt-5.2-codex (003636)，也有 gpt-5.3-codex
-- provider 改名 openai-custom→openai-codex 是为了支持 xhigh thinking
-- 备用模型：anyrouter/claude-opus-4-6
-- 搜索：Tavily ✅ (tp.aillm.cc.cd) / Exa ✅ / Grok ✅ / MinerU ✅ / SearXNG ✅ / Brave ❌（不使用）
+- 默认模型：003636/gpt-5.2-codex，也有 gpt-5.3-codex（alias: opus）
+- 备用模型：anyrouter/claude-opus-4-6（群聊用）
+- 其他渠道：gpt-load（25+ 模型）、gemini2api（6 模型）、openai-custom（杂项转发）
+- 搜索：Tavily ✅ / Exa ✅ / Grok ✅ / MinerU ✅ / SearXNG ✅ / Brave ❌
 - 搜索策略：默认走 search-layer + SearXNG，不用 Brave/web_search
 - 小红书 MCP：localhost:18060 ✅
 - Twitter/X：bird v0.8.0, @Nian_Mo_ ✅
+- Grok2API：grok2api.xqp-grok.workers.dev（CF Workers）
+- FastGPT：fastgpt.nianmo.top / RedInk：hm.nianmo.top
+- ⚠️ SSL 证书 2026-04-02 到期（FastGPT 服务器 Cloudflare origin cert）
 - 详情 → `memory/context/environment.md`
 
 ## Hajimi King 速查
 - **VPS**: root@23.95.34.155, /opt/hajimi-king/repo
 - **容器**: hajimi-king:0.0.1, 8 进程, docker-compose
 - **13 种 key**: gemini, openai, anthropic, groq, openrouter, deepseek, fireworks, together, hf_token, replicate, cohere, perplexity, zhipu
-- **搜索**: 144 条 query, 三向搜索, SHA 去重
+- **搜索**: 272 条 query, 三向搜索, SHA 去重, 19000+ SHA 已扫
 - **验证**: valid/429/invalid 三分管理, 每 1h 复验
+- **现状**: GitHub 公开 key 红利期已过，有效产出递减
 - 详情 → `memory/2026-02-22.md`（部署记录）
 
 ## Skills 工具箱（自媒体相关）
