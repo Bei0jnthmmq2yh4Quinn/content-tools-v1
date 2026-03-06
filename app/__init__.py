@@ -1,1 +1,1 @@
-# Content Tools App
+"""Content Tools 应用包。"""
