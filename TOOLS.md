@@ -13,27 +13,15 @@ Things like:
 - Device nicknames
 - Anything environment-specific
 
-## Examples
-
-```markdown
-### Cameras
-
-- living-room → Main area, 180° wide angle
-- front-door → Entrance, motion-triggered
-
-### SSH
-
-- home-server → 192.168.1.100, user: admin
-
-### TTS
-
-- Preferred voice: "Nova" (warm, slightly British)
-- Default speaker: Kitchen HomePod
-```
-
 ## Why Separate?
 
 Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
+
+---
+
+## GitHub
+
+- **Token (Classic, 满权限)**: `[REDACTED_GITHUB_TOKEN]`
 
 ---
 
@@ -55,8 +43,12 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ### SSH
 
-- **nianmo-vps** → `root@23.95.34.155`, pwd: `lmmxqp980706Aa`
+- **ccs** → `root@23.95.34.155`, pwd: `lmmxqp980706Aa`
   - Debian 5.10, 1G RAM, 25G disk
+- **备用服务器** → `root@23.80.89.41`
+- **大白服务器** → `root@38.146.29.115`, pwd: `2Kb{e:iF`
+- **do服务器** → `root@165.227.185.241`, pwd: `kaikaixinxin@`
+  - Debian 13, 4G RAM, 79G disk, Caddy + Docker + PostgreSQL
 
 ---
 
