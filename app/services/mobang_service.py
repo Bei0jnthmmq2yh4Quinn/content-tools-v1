@@ -153,6 +153,12 @@ class MobangService:
             'copywriting': copywriting,
             'tags': tags,
             'primary_title': titles[0],
+            'cover_line': f'{industry}内容怎么写，反馈才会更好',
+            'cta_options': [
+                '如果你也在做这类内容，但一直没反馈，可以把行业和目标发我。',
+                '你现在最卡的是选题、表达，还是转化？评论区聊聊。',
+                '有同类问题的，直接按你的行业继续拆。',
+            ],
             'outline': [
                 '开头：先戳用户当前最容易踩的坑',
                 '中段：解释为什么没反馈，不是努力不够，而是表达顺序不对',
