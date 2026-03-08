@@ -118,7 +118,7 @@
               <div id="analyzeResult" class="space-y-3 text-sm text-gray-700"><div class="text-gray-400">还没开始，先点“拆解脚本”。</div></div>
             </div>
             <div class="border rounded-2xl p-4 bg-gray-50">
-              <div class="font-semibold mb-3">改写成稿（多版本）</div>
+              <div class="font-semibold mb-3">改写成稿（多版本 + 小红书成稿包）</div>
               <div id="rewriteResult" class="space-y-3 text-sm text-gray-700"><div class="text-gray-400">还没开始，先点“改写脚本”。</div></div>
             </div>
           </div>
@@ -192,13 +192,23 @@
       if (!data.success) { document.getElementById('rewriteResult').innerHTML = `<div class="text-red-500">${escapeHtml(data.message || '改写失败')}</div>`; return; }
       const d = data.data || {};
       const variants = d.variants || [];
-      document.getElementById('rewriteResult').innerHTML = variants.map(v => `
+      const pack = d.xhs_package || null;
+      const packHtml = pack ? `
+        <div class="border rounded-xl p-3 bg-amber-50 mb-3">
+          <div class="font-semibold mb-2">小红书成稿包</div>
+          <div class="mb-3"><div class="text-xs text-gray-500 mb-1">标题建议</div><div class="space-y-1">${(pack.titles || []).map(t => `<div class="bg-white rounded p-2">${escapeHtml(t || '')}</div>`).join('')}</div></div>
+          <div class="mb-3"><div class="text-xs text-gray-500 mb-1">正文</div><div class="mono whitespace-pre-wrap text-sm leading-6 bg-white rounded p-3">${escapeHtml(pack.copywriting || '')}</div></div>
+          <div><div class="text-xs text-gray-500 mb-1">标签</div><div class="flex gap-2 flex-wrap">${(pack.tags || []).map(t => `<span class="px-2 py-1 rounded bg-white text-xs">${escapeHtml(t || '')}</span>`).join('')}</div></div>
+        </div>
+      ` : '';
+      const variantsHtml = variants.map(v => `
         <div class="border rounded-xl p-3 bg-white mb-3">
           <div class="flex justify-between items-center mb-2 gap-2 flex-wrap"><div class="font-semibold">${escapeHtml(v.title || '')}</div><span class="text-xs px-2 py-1 rounded bg-emerald-100 text-emerald-700">${escapeHtml(v.tone || '')}</span></div>
           <div class="text-sm text-gray-600 mb-2">${escapeHtml(v.summary || '')}</div>
           <div class="mono whitespace-pre-wrap text-sm leading-6">${escapeHtml(v.script || '')}</div>
         </div>
-      `).join('') || `<div class="border rounded-xl p-3 bg-white"><div class="font-semibold mb-2">${escapeHtml(d.title || '')}</div><div class="text-sm text-gray-600 mb-2">${escapeHtml(d.summary || '')}</div><div class="mono whitespace-pre-wrap text-sm leading-6">${escapeHtml(d.script || '')}</div></div>`;
+      `).join('');
+      document.getElementById('rewriteResult').innerHTML = packHtml + (variantsHtml || `<div class="border rounded-xl p-3 bg-white"><div class="font-semibold mb-2">${escapeHtml(d.title || '')}</div><div class="text-sm text-gray-600 mb-2">${escapeHtml(d.summary || '')}</div><div class="mono whitespace-pre-wrap text-sm leading-6">${escapeHtml(d.script || '')}</div></div>`);
     }
     function copyResult(id) { const text = document.getElementById(id).innerText.trim(); if (!text) return; navigator.clipboard.writeText(text); document.getElementById('mobangStatus').textContent = '已复制到剪贴板'; }
     async function getDouyin() { const res = await fetch(API + '/trends/douyin'); const data = await res.json(); document.getElementById('trendsResult').innerHTML = (data.data || []).map(t => `<div class="flex justify-between p-3 bg-gray-50 rounded"><span>#${t.rank} ${escapeHtml(t.title || '')}</span><span class="text-gray-500">${Number(t.hot || 0).toLocaleString()}</span></div>`).join('') || '<div class="text-gray-400">暂无数据</div>'; }

@@ -108,6 +108,33 @@ class MobangService:
         return {'tone': tone, 'title': title, 'summary': summary, 'script': script}
 
     @classmethod
+    def _build_xhs_package(cls, hook: str, ctx: Dict[str, str], variants: List[Dict[str, str]]) -> Dict[str, Any]:
+        industry = ctx['industry']
+        goal = ctx['goal']
+        title_main = f'{industry}内容怎么写，反馈才会更好'
+        titles = [
+            title_main,
+            f'{industry}做{goal}内容，别再一上来就讲自己',
+            f'为什么你发了{industry}内容，还是没人来问',
+        ]
+        copywriting = (
+            f'{hook}。\n\n'
+            f'很多做{industry}内容的人没结果，不是因为不努力，而是内容一开口就偏了。\n\n'
+            f'用户真正想看的，不是你会什么，而是你到底能帮他解决什么问题。\n\n'
+            f'更稳的写法是：先把用户最在意的痛点讲透，再给一个可执行的方法，最后补一句明确的行动引导。\n\n'
+            f'如果你现在做内容的目标是{goal}，那就别再把重点放在自我介绍上，先把用户的问题说清楚。\n\n'
+            f'你更适合哪种写法？可以直接按你的行业继续往下改。'
+        )
+        tags = [industry, goal, '内容运营', '小红书文案', '爆款拆解', '内容改写']
+        return {
+            'titles': titles,
+            'copywriting': copywriting,
+            'tags': tags,
+            'primary_title': titles[0],
+            'primary_variant': variants[0] if variants else None,
+        }
+
+    @classmethod
     def rule_rewrite(cls, text: str, mode: str, industry: str = '', platform: str = '', goal: str = '') -> Dict[str, Any]:
         ctx = cls.build_context(industry, platform, goal)
         base = cls.rule_analyze(text, industry=industry, platform=platform, goal=goal)
@@ -117,12 +144,14 @@ class MobangService:
             cls._build_variant(mode, 'strong', hook, ctx),
             cls._build_variant(mode, 'convert', hook, ctx),
         ]
+        xhs_package = cls._build_xhs_package(hook, ctx, variants) if ctx['platform'] == 'xiaohongshu' or mode == 'xiaohongshu' else None
         return {
             'mode': mode,
             'title': variants[0]['title'],
             'summary': f'已生成 3 个方向，分别偏稳妥、强钩子、转化，当前按{ctx["industry"]}/{ctx["platform"]}/{ctx["goal"]}场景调整。',
             'script': variants[0]['script'],
             'variants': variants,
+            'xhs_package': xhs_package,
             'context': ctx,
             'fallback': True,
         }
@@ -162,9 +191,10 @@ class MobangService:
         if not api_key:
             return None
         prompt = (
-            '你是内容改写助手。请结合以下上下文改写：'
+            '你是内容改写助手，同时要具备小红书成稿能力。请结合以下上下文改写：'
             f'行业={industry or "通用"}，平台={platform or "xiaohongshu"}，目标={goal or "涨粉"}，模式={mode}。'
-            '返回 JSON，字段必须包含：mode, title, summary, script, variants(数组，至少3项，每项包含 tone,title,summary,script), context(对象)。只返回 JSON。\n\n原文：' + text
+            '返回 JSON，字段必须包含：mode, title, summary, script, variants(数组，至少3项，每项包含 tone,title,summary,script), context(对象)。'
+            '当平台是 xiaohongshu 或模式是 xiaohongshu 时，额外返回 xhs_package 对象，字段包含 titles(3个标题数组), copywriting(完整正文), tags(5-8个标签数组), primary_title。只返回 JSON。\n\n原文：' + text
         )
         obj = await cls._chat_json(prompt, api_key=api_key, base_url=base_url, model=model)
         obj['fallback'] = False
