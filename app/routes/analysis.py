@@ -12,7 +12,8 @@ class AnalyzeRequest(BaseModel):
     """对标分析请求体。"""
 
     platform: str
-    username: str
+    username: str = ''
+    sample_text: str = ''
 
 
 def build_demo_posts(username: str, platform: str) -> List[Dict[str, Any]]:
@@ -69,11 +70,65 @@ def summarize_posts(posts: List[Dict[str, Any]], platform: str) -> Dict[str, Any
     }
 
 
+def analyze_sample_text(sample_text: str, platform: str) -> Dict[str, Any]:
+    text = (sample_text or '').strip()
+    sentences = [x.strip() for x in text.replace('\r', '\n').split('\n') if x.strip()]
+    first = sentences[0] if sentences else text[:30]
+    hooks = [s for s in sentences[:3] if len(s) <= 40] or ([first] if first else [])
+    strength_points = [
+        '开头有明确钩子，适合继续强化第一屏停留。' if first else '文本开头偏弱，建议补一个更直接的痛点句。',
+        '分段相对清楚，适合继续压缩成更短的表达。' if len(sentences) >= 3 else '当前分段不够明显，建议拆成 3-5 个短段。',
+        '适合做观点/案例/避坑类表达。' if any(k in text for k in ['为什么', '别再', '不是', '避坑']) else '更适合补充案例和具体动作。',
+    ]
+    risks = [
+        '如果全篇都在讲自己，用户容易觉得和他没关系。',
+        '如果只有观点没有案例，信任感会不够。',
+        '如果结尾没有动作指令，转化会偏弱。',
+    ]
+    suggestions = [
+        '第一段先说用户痛点，不要先做自我介绍。',
+        '中段补一个真实场景或客户案例。',
+        '结尾加一句互动或咨询引导。',
+    ]
+    style = '观点表达' if any(k in text for k in ['我觉得', '我发现', '不是']) else '经验分享'
+    return {
+        'followers': None,
+        'avg_likes': None,
+        'avg_interaction': None,
+        'content_style': style,
+        'topics': hooks,
+        'top_hook': first,
+        'top_post_title': first[:30],
+        'analysis': {
+            'strengths': strength_points,
+            'risks': risks,
+            'suggestions': suggestions,
+        },
+        'samples': [{'title': first[:30], 'hook': first, 'style': style, 'source': 'sample_text'}],
+    }
+
+
 @router.post('/benchmark')
 async def analyze_benchmark(req: AnalyzeRequest):
-    """返回演示级对标分析结果，并明确标注当前不是实时抓取。"""
+    """支持两种模式：样本文案真分析 / 用户名演示分析。"""
     username = (req.username or '').strip()
     platform = (req.platform or 'xiaohongshu').strip()
+    sample_text = (req.sample_text or '').strip()
+
+    if sample_text:
+        summary = analyze_sample_text(sample_text, platform)
+        return {
+            'success': True,
+            'message': '已按你提供的样本文案完成结构分析。当前不是账号实时抓取，而是对文本本身做分析。',
+            'data': {
+                'username': username,
+                'platform': platform,
+                'source': 'sample_text',
+                'realtime': False,
+                **summary,
+            },
+        }
+
     posts = build_demo_posts(username or 'demo', platform)
     summary = summarize_posts(posts, platform)
     return {
