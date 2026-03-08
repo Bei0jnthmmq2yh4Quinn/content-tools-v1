@@ -21,16 +21,27 @@ XHS_EXPLORE_URL = 'https://www.xiaohongshu.com/explore'
 def build_industry_suggestions(industry: str, platform: str, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     industry = (industry or '通用').strip()
     platform = platform or 'xiaohongshu'
+    card_types = [
+        ('热点借势', '结合热点借势表达', '适合追热度和拉停留'),
+        ('行业观点', '输出判断和立场', '适合建立专业感和差异化'),
+        ('接单案例', '把结果和案例讲清楚', '适合服务型账号接咨询'),
+        ('避坑反常识', '从错误做法切入', '适合做收藏和转发'),
+    ]
     suggestions = []
-    for item in items[:5]:
+    for idx, item in enumerate(items[:4]):
         title = item.get('title') or '未命名热点'
+        type_name, angle_desc, fit_desc = card_types[idx % len(card_types)]
         suggestions.append(
             {
+                'type': type_name,
                 'hotspot': title,
-                'reason': f'这个热点有情绪或讨论度，适合 {industry} 赛道做借势表达。',
+                'title': f'{industry}：{title}',
+                'reason': f'这条内容和“{title}”有关，但要改成 {industry} 用户真的关心的问题，才有用。',
                 'topic': f'{industry}怎么结合「{title}」做一条更容易出反馈的内容',
-                'angle': '小红书图文拆解' if platform == 'xiaohongshu' else '抖音口播借势',
-                'action': '先讲用户情绪，再补一个行业场景，最后落到具体建议。',
+                'angle': angle_desc if platform == 'xiaohongshu' else f'{angle_desc}（口播版）',
+                'fit': fit_desc,
+                'action': '先贴行业痛点，再补一个真实场景，最后给具体动作。',
+                'draft': f'{industry}行业里，最近很多人都在关注「{title}」。\n\n但真正值得做的，不是复述热点，而是把它改成和客户决策有关的内容。\n\n你可以先讲这个热点背后反映出的用户情绪，再落到你的行业场景里。',
             }
         )
     return suggestions
@@ -40,20 +51,24 @@ def build_today_brief(industry: str, platform: str, goal: str, items: List[Dict[
     suggestions = build_industry_suggestions(industry, platform, items)
     first = suggestions[0] if suggestions else {
         'topic': f'{industry}今天适合做一条{goal}向内容',
-        'reason': '当前没有抓到合适热点，建议先用通用问题切入。',
+        'reason': '当前没有抓到合适热点，建议先用行业痛点切入。',
         'action': '先讲痛点，再讲方法，最后加行动引导。',
         'hotspot': '通用话题',
         'angle': '通用切入',
+        'type': '行业观点',
+        'fit': '适合先做一条行业基础表达',
     }
     return {
         'industry': industry,
         'platform': platform,
         'goal': goal,
-        'headline': first['topic'],
+        'headline': first.get('title') or first['topic'],
         'reason': first['reason'],
         'action': first['action'],
         'hotspot': first['hotspot'],
         'angle': first['angle'],
+        'type': first.get('type', '行业观点'),
+        'fit': first.get('fit', ''),
         'title_hint': f'{industry}{goal}内容，可以先从「{first["hotspot"]}」切入',
     }
 
