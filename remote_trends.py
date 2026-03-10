@@ -62,15 +62,6 @@ def _keyword_pack(industry: str) -> Dict[str, List[str]]:
     }
 
 
-def _all_keywords(pack: Dict[str, List[str]]) -> List[str]:
-    seen = []
-    for key in ['core', 'sub', 'biz', 'user', 'risk']:
-        for item in pack.get(key, []):
-            if item and item not in seen:
-                seen.append(item)
-    return seen
-
-
 def _score_title(title: str, pack: Dict[str, List[str]]) -> Tuple[int, List[str]]:
     matched: List[str] = []
     score = 0
@@ -136,25 +127,7 @@ FALLBACK_TEMPLATES: Dict[str, List[Dict[str, str]]] = {
             'action': '先讲客流问题，再讲进店理由，最后补一个能马上改的动作。',
             'matched_keywords': ['餐饮', '客流', '门店'],
             'relevance_score': 10,
-        },
-        {
-            'hotspot': '餐饮团购转化',
-            'reason': '团购和到店转化是餐饮行业稳定高相关话题，比泛热点更适合直接拿来做内容。',
-            'topic': '餐饮团购没人下单，很多时候不是便宜不够，而是套餐看起来没有购买理由',
-            'angle': '转化问题切入',
-            'action': '拆价格、拆套餐、拆下单理由，最后给一个重做套餐文案的动作。',
-            'matched_keywords': ['餐饮', '团购', '转化'],
-            'relevance_score': 9,
-        },
-        {
-            'hotspot': '餐饮外卖复购',
-            'reason': '外卖和复购属于餐饮高频经营场景，适合长期做系列内容。',
-            'topic': '餐饮外卖单量一般，不是平台不给流量，是顾客吃完一次没有理由再点第二次',
-            'angle': '复购经营视角',
-            'action': '先说复购，再说顾客感知，最后给一个可执行优化点。',
-            'matched_keywords': ['餐饮', '外卖', '复购'],
-            'relevance_score': 9,
-        },
+        }
     ]
 }
 
@@ -181,10 +154,7 @@ def build_industry_suggestions(industry: str, platform: str, items: List[Dict[st
         title = item.get('title') or '未命名热点'
         matched = item.get('matched_keywords') or []
         relevance = item.get('relevance_score', 0)
-        if not matched or relevance <= 0:
-            reason = f'未命中 {industry} 关键词，当前为规则兜底建议，可先用行业常见问题切入。'
-        else:
-            reason = f'标题命中了 {"、".join(matched)}，和 {industry} 行业直接相关，不是泛热点硬套。'
+        reason = f'标题命中了 {"、".join(matched)}，和 {industry} 行业直接相关，不是泛热点硬套。' if matched and relevance > 0 else f'未命中 {industry} 关键词，当前为规则兜底建议，可先用行业常见问题切入。'
         suggestions.append(
             {
                 'hotspot': title,

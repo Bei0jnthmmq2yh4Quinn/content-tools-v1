@@ -46,9 +46,9 @@ def normalize_text(text: str, url: str) -> Tuple[Optional[str], Optional[str], O
             parsed = DouyinParseService.parse(url)
             if parsed.get('success') and parsed.get('text'):
                 return parsed['text'], None, parsed.get('meta', {})
-            return None, parsed.get('message') or '当前抖音链接解析失败，请先把字幕/文案贴进来。', parsed.get('meta', {})
-        return None, '暂不支持该链接类型，请先粘贴文本内容。', None
-    return None, '请先输入爆款文案、字幕或链接。', None
+            return None, parsed.get('message') or '当前抖音链接解析失败。建议优先粘贴视频字幕、口播文案，稳定性更高。', parsed.get('meta', {})
+        return None, '暂不支持该链接类型。建议先粘贴文本内容，再继续拆解或改写。', None
+    return None, '请先输入爆款文案、字幕或链接。最稳的方式是直接粘贴文本。', None
 
 
 @router.post('/config')
@@ -57,7 +57,7 @@ async def config(provider: ProviderBody):
     if not ok:
         return {'success': True, 'configured': False, 'message': '未配置 AI 渠道，将使用规则兜底'}
     try:
-        await MobangService._chat_json('只返回 JSON：{"ok":true}', api_key=provider.api_key, base_url=provider.base_url, model=provider.model)
+        await MobangService._chat_json('{"ok":true}', api_key=provider.api_key, base_url=provider.base_url, model=provider.model)
         return {'success': True, 'configured': True, 'message': f'AI 渠道可用：{provider.model}'}
     except Exception as e:
         return {'success': False, 'configured': False, 'message': f'AI 渠道不可用：{str(e)[:120]}'}
@@ -75,7 +75,8 @@ async def analyze(body: AnalyzeBody):
             return {'success': True, 'message': '拆解完成（LLM）', 'data': data, 'meta': meta or {}}
     except Exception:
         pass
-    return {'success': True, 'message': 'AI 渠道暂不可用，已切换到规则兜底拆解。你也可以补充更完整的原文，让结果更稳。', 'data': MobangService.rule_analyze(text, industry=body.industry, platform=body.platform, goal=body.goal), 'meta': meta or {}}
+    fallback = MobangService.rule_analyze(text, industry=body.industry, platform=body.platform, goal=body.goal)
+    return {'success': True, 'message': 'AI 渠道暂不可用，已切换到规则兜底拆解。你也可以补充更完整的原文，让结果更稳。', 'data': fallback, 'meta': meta or {}}
 
 
 @router.post('/rewrite')
@@ -90,4 +91,5 @@ async def rewrite(body: RewriteBody):
             return {'success': True, 'message': '改写完成（LLM）', 'data': data, 'meta': meta or {}}
     except Exception:
         pass
-    return {'success': True, 'message': 'AI 渠道暂不可用，已切换到规则兜底改写。想要结果更像真人成稿，建议补充更完整的原文或切换可用模型。', 'data': MobangService.rule_rewrite(text, body.mode, industry=body.industry, platform=body.platform, goal=body.goal), 'meta': meta or {}}
+    fallback = MobangService.rule_rewrite(text, body.mode, industry=body.industry, platform=body.platform, goal=body.goal)
+    return {'success': True, 'message': 'AI 渠道暂不可用，已切换到规则兜底改写。想要结果更像真人成稿，建议补充更完整的原文或切换可用模型。', 'data': fallback, 'meta': meta or {}}
